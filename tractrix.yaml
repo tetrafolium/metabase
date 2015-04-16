@@ -1,0 +1,5 @@
+docstand:
+  javadoc:
+    version: 1.0.0
+  godoc:
+    version: 2.0.0
