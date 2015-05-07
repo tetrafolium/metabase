@@ -14,7 +14,7 @@ type Accessor interface {
 }
 
 // CreateFile retrieves io.WriteCloser for given Accessor and writes fileBody.
-// io.WriteCloser is closed inside function
+// io.WriteCloser is closed inside function.
 func CreateFile(ac Accessor, fileName string, fileBody []byte) error {
 	if ac == nil {
 		return errors.New("invalid accessor")
