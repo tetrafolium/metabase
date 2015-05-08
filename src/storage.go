@@ -6,6 +6,11 @@ import (
 	"io/ioutil"
 )
 
+// TestFunc is a test function
+func TestFunc() error {
+	return errors.New("this is a test")
+}
+
 // Accessor is an interface for access to storage.
 type Accessor interface {
 	Create(fileName string) (io.WriteCloser, error)
