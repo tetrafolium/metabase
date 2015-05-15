@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 )
 
-// TestFunc is a test function
-func TestFunc() error {
+// TestFunc2 is a test function
+func TestFunc2() error {
 	return errors.New("this is a test")
 }
 
