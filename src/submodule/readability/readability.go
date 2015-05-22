@@ -1,3 +1,4 @@
+// A Go implementation of the readability algorithm by arc90 labs
 package readability
 
 import (
