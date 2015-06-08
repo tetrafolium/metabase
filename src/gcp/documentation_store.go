@@ -139,9 +139,10 @@ func (store *DocumentationStore) newDocumentationStatusKey(target *data.Document
 	return datastore.NewKey(store.context, kindDocumentationStatus, "", status.SequenceID, parentKey), nil
 }
 
-func (store *DocumentationStore) getDocumentationStatusesByTarget(target *data.DocumentationTarget) ([]*data.DocumentationStatus, error) {
-	// To Check : When using this as parent key, double no of entities return as output.
+func (store *DocumentationStore) listDocumentationStatusesInTarget(target *data.DocumentationTarget) ([]*data.DocumentationStatus, error) {
 	// parentKey := store.newRepositoryIDKey(target.RepositoryID)
+	// To Check : While querying the datastore,  if we use the above key as parentKey,
+	// it returns (number of branches) times the actual number of entities.
 
 	parentKey, err := store.newDocumentationTargetKey(target, kindDocumentationStatus)
 	if err != nil {
@@ -447,7 +448,7 @@ func (store *DocumentationStore) CreateStatus(target *data.DocumentationTarget, 
 	}, nil)
 }
 
-// GetStatus loads the documentation status for the documentation target.
+// GetStatus fetches the documentation status uniquely for the given documentation target and sequenceID.
 func (store *DocumentationStore) GetStatus(target *data.DocumentationTarget, sequenceID int64) (*data.DocumentationStatus, error) {
 	key, err := store.newDocumentationStatusKey(target, &data.DocumentationStatus{SequenceID: sequenceID})
 	if err != nil {
@@ -468,12 +469,12 @@ func (store *DocumentationStore) GetStatus(target *data.DocumentationTarget, seq
 	return status, nil
 }
 
-// GetStatusMulti loads the documentation status for the multiple documentation targets of a given repository
+// GetStatusMulti fetches the lists of documentation statuses for the multiple documentation targets of a given repository.
 func (store *DocumentationStore) GetStatusMulti(targets []*data.DocumentationTarget) (map[*data.DocumentationTarget][]*data.DocumentationStatus, error) {
 	targets2StatusArrays := make(map[*data.DocumentationTarget][]*data.DocumentationStatus)
 
 	for _, target := range targets {
-		statusArray, err := store.getDocumentationStatusesByTarget(target)
+		statusArray, err := store.listDocumentationStatusesInTarget(target)
 		if err != nil {
 			return nil, err
 		}
