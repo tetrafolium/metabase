@@ -14,10 +14,11 @@ import (
 )
 
 const (
-	kindDocumentation       = "Documentation"
-	kindDocumentationResult = "DocumentationResult"
-	kindDocumentationStatus = "DocumentationStatus"
-	kindDeletingTarget      = "DeletingTarget"
+	kindDocumentation           = "Documentation"
+	kindDocumentationResult     = "DocumentationResult"
+	kindDocumentationStatus     = "DocumentationStatus"
+	kindDocumentationToolStatus = "DocumentationToolStatus"
+	kindDeletingTarget          = "DeletingTarget"
 )
 
 type documentationResultEntity struct {
@@ -76,6 +77,20 @@ func (entity *documentationStatusEntity) toDocumentationStatus() *data.Documenta
 		Status:      entity.Status,
 		RequestedAt: entity.RequestedAt,
 		UpdatedAt:   entity.UpdatedAt,
+	}
+}
+
+type documentationToolStatusEntity struct {
+	Status    string
+	StartedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (entity *documentationToolStatusEntity) toDocumentationToolStatus() *data.DocumentationToolStatus {
+	return &data.DocumentationToolStatus{
+		Status:    entity.Status,
+		StartedAt: entity.StartedAt,
+		UpdatedAt: entity.UpdatedAt,
 	}
 }
 
@@ -139,40 +154,17 @@ func (store *DocumentationStore) newDocumentationStatusKey(target *data.Document
 	return datastore.NewKey(store.context, kindDocumentationStatus, "", status.SequenceID, parentKey), nil
 }
 
-func (store *DocumentationStore) listDocumentationStatusesInTarget(target *data.DocumentationTarget) ([]*data.DocumentationStatus, error) {
-	// parentKey := store.newRepositoryIDKey(target.RepositoryID)
-	// To Check : While querying the datastore,  if we use the above key as parentKey,
-	// it returns (number of branches) times the actual number of entities.
-
-	parentKey, err := store.newDocumentationTargetKey(target, kindDocumentationStatus)
+func (store *DocumentationStore) newDocumentationToolStatusKey(target *data.DocumentationTarget, status *data.DocumentationStatus, toolStatus *data.DocumentationToolStatus) (*datastore.Key, error) {
+	parentKey, err := store.newDocumentationStatusKey(target, status)
 	if err != nil {
 		return nil, err
 	}
 
-	var statusArray []*data.DocumentationStatus
+	if toolStatus == nil {
+		return nil, fmt.Errorf("no documentation tool status specified")
+	}
 
-	err = gcp.NewDefaultDatastoreTransaction().Run(store.context, func(transactionContext context.Context) error {
-
-		statusQuery := datastore.NewQuery(parentKey.Kind()).Ancestor(parentKey)
-
-		var entities []documentationStatusEntity
-		keys, err := statusQuery.GetAll(transactionContext, &entities)
-		if err != nil {
-			return err
-		}
-
-		for index, entity := range entities {
-			docStatus := entity.toDocumentationStatus()
-			docStatus.SequenceID = keys[index].IntID()
-			statusArray = append(statusArray, docStatus)
-		}
-
-		return nil
-
-	}, nil)
-
-	return statusArray, err
-
+	return datastore.NewKey(store.context, kindDocumentationToolStatus, toolStatus.Type, 0, parentKey), nil
 }
 
 func (store *DocumentationStore) newCommitIDKey(target *data.DocumentationTarget, kind, commitID string) (*datastore.Key, error) {
@@ -372,6 +364,10 @@ func (store *DocumentationStore) GetResultMulti(targets []*data.DocumentationTar
 		keys2Targets[key] = target
 	}
 
+	if len(keys) == 0 {
+		return nil, nil
+	}
+
 	// TODO: Reconsider how to handle MultiError.
 	entities := make([]*documentationResultEntity, len(keys))
 	if err := datastore.GetMulti(store.context, keys, entities); err != nil {
@@ -448,7 +444,7 @@ func (store *DocumentationStore) CreateStatus(target *data.DocumentationTarget, 
 	}, nil)
 }
 
-// GetStatus fetches the documentation status uniquely for the given documentation target and sequenceID.
+// GetStatus loads the documentation status for the documentation target.
 func (store *DocumentationStore) GetStatus(target *data.DocumentationTarget, sequenceID int64) (*data.DocumentationStatus, error) {
 	key, err := store.newDocumentationStatusKey(target, &data.DocumentationStatus{SequenceID: sequenceID})
 	if err != nil {
@@ -467,21 +463,6 @@ func (store *DocumentationStore) GetStatus(target *data.DocumentationTarget, seq
 	status := entity.toDocumentationStatus()
 	status.SequenceID = sequenceID
 	return status, nil
-}
-
-// GetStatusMulti fetches the lists of documentation statuses for the multiple documentation targets of a given repository.
-func (store *DocumentationStore) GetStatusMulti(targets []*data.DocumentationTarget) (map[*data.DocumentationTarget][]*data.DocumentationStatus, error) {
-	targets2StatusArrays := make(map[*data.DocumentationTarget][]*data.DocumentationStatus)
-
-	for _, target := range targets {
-		statusArray, err := store.listDocumentationStatusesInTarget(target)
-		if err != nil {
-			return nil, err
-		}
-		targets2StatusArrays[target] = statusArray
-	}
-
-	return targets2StatusArrays, nil
 }
 
 // UpdateStatus updates the existing documentation status with the given one.
@@ -552,6 +533,90 @@ func (store *DocumentationStore) QueryStatus(target *data.DocumentationTarget, s
 		for index, entity := range entities {
 			docStatus := entity.toDocumentationStatus()
 			docStatus.SequenceID = keys[index].IntID()
+			statuses = append(statuses, docStatus)
+		}
+
+		return nil
+	}, nil)
+
+	return statuses, err
+}
+
+// CreateToolStatus saves a new entity for document tool status.
+func (store *DocumentationStore) CreateToolStatus(target *data.DocumentationTarget, status *data.DocumentationStatus, toolStatus *data.DocumentationToolStatus) error {
+	key, err := store.newDocumentationToolStatusKey(target, status, toolStatus)
+	if err != nil {
+		return err
+	}
+
+	return gcp.NewDefaultDatastoreTransaction().Run(store.context, func(tc context.Context) error {
+		err := datastore.Get(tc, key, new(documentationToolStatusEntity))
+		if err == nil {
+			return data.ErrStatusAlreadyExists
+		}
+		if err != datastore.ErrNoSuchEntity {
+			return err
+		}
+
+		// time.Time is stored with microsecond precision into datastore.
+		// See https://cloud.google.com/appengine/docs/go/datastore/reference also.
+		currentUTCTime := time.Now().UTC().Round(time.Microsecond)
+		entity := &documentationToolStatusEntity{
+			Status:    toolStatus.Status,
+			StartedAt: currentUTCTime,
+			UpdatedAt: currentUTCTime,
+		}
+		_, err = datastore.Put(store.context, key, entity)
+		return err
+	}, nil)
+}
+
+// UpdateToolStatus updates the existing documentation tool status with the given one.
+func (store *DocumentationStore) UpdateToolStatus(target *data.DocumentationTarget, status *data.DocumentationStatus, toolStatus *data.DocumentationToolStatus) error {
+	key, err := store.newDocumentationToolStatusKey(target, status, toolStatus)
+	if err != nil {
+		return err
+	}
+
+	return gcp.NewDefaultDatastoreTransaction().Run(store.context, func(tc context.Context) error {
+		entity := new(documentationToolStatusEntity)
+		err := datastore.Get(tc, key, entity)
+		if err == datastore.ErrNoSuchEntity {
+			return data.ErrNoSuchStatus
+		}
+		if err != nil {
+			return err
+		}
+
+		// time.Time is stored with microsecond precision into datastore.
+		// See https://cloud.google.com/appengine/docs/go/datastore/reference also.
+		// And furthermore, RequestedAt should not be updated.
+		entity.Status = toolStatus.Status
+		entity.UpdatedAt = time.Now().UTC().Round(time.Microsecond)
+		_, err = datastore.Put(store.context, key, entity)
+		return err
+	}, nil)
+}
+
+// GetToolStatuses gets documentation tool statuses for the documentation status of documentation target.
+func (store *DocumentationStore) GetToolStatuses(target *data.DocumentationTarget, status *data.DocumentationStatus) ([]*data.DocumentationToolStatus, error) {
+	key, err := store.newDocumentationStatusKey(target, status)
+	if err != nil {
+		return nil, err
+	}
+
+	var statuses []*data.DocumentationToolStatus
+	err = gcp.NewDefaultDatastoreTransaction().Run(store.context, func(transactionContext context.Context) error {
+		query := datastore.NewQuery(kindDocumentationToolStatus).Ancestor(key)
+		var entities []documentationToolStatusEntity
+		keys, err := query.GetAll(transactionContext, &entities)
+		if err != nil {
+			return err
+		}
+
+		for index, entity := range entities {
+			docStatus := entity.toDocumentationToolStatus()
+			docStatus.Type = keys[index].StringID()
 			statuses = append(statuses, docStatus)
 		}
 

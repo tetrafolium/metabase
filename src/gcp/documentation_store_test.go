@@ -779,3 +779,201 @@ func (suite *DocumentationStoreTestSuite) Test_QueryStatus_WithNilTarget() {
 	suite.Assert().Error(err)
 	suite.Assert().Nil(actual)
 }
+
+func (suite *DocumentationStoreTestSuite) Test_CreateToolStatus_WithUnexistingToolStatus() {
+	target := suite.newDocumentationTarget()
+	status := &data.DocumentationStatus{
+		SequenceID: 100,
+		CommitID:   "ada984a02cca9f8362d0c3b75fb50c0591b28924",
+		Status:     data.DocumentationStatusQueuing,
+	}
+	toolStatus := &data.DocumentationToolStatus{
+		Type:   "godoc",
+		Status: data.DocumentationToolStatusSucceeded,
+	}
+	startTime := time.Now().UTC()
+	err := suite.store.CreateToolStatus(target, status, toolStatus)
+	endTime := time.Now().UTC()
+	suite.Assert().NoError(err)
+
+	key, _ := suite.store.newDocumentationToolStatusKey(target, status, toolStatus)
+	entity := new(documentationToolStatusEntity)
+	err = datastore.Get(suite.Context(), key, entity)
+	suite.Assert().NoError(err)
+	suite.Assert().Equal(toolStatus.Status, entity.Status)
+	suite.Assert().True(entity.StartedAt.UTC().Equal(startTime) || entity.StartedAt.UTC().After(startTime))
+	suite.Assert().True(entity.StartedAt.UTC().Equal(endTime) || entity.StartedAt.UTC().Before(endTime))
+	suite.Assert().True(entity.UpdatedAt.UTC().Equal(startTime) || entity.UpdatedAt.UTC().After(startTime))
+	suite.Assert().True(entity.UpdatedAt.UTC().Equal(endTime) || entity.UpdatedAt.UTC().Before(endTime))
+}
+
+func (suite *DocumentationStoreTestSuite) Test_CreateToolStatus_WithExistingStatus() {
+	target := suite.newDocumentationTarget()
+	status := &data.DocumentationStatus{
+		SequenceID: 100,
+		CommitID:   "ada984a02cca9f8362d0c3b75fb50c0591b28924",
+		Status:     data.DocumentationStatusQueuing,
+	}
+	toolStatus := &data.DocumentationToolStatus{
+		Type:   "godoc",
+		Status: data.DocumentationToolStatusSucceeded,
+	}
+	err := suite.store.CreateToolStatus(target, status, toolStatus)
+	suite.Assert().NoError(err)
+
+	err = suite.store.CreateToolStatus(target, status, toolStatus)
+	suite.Assert().Equal(data.ErrStatusAlreadyExists, err)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_CreateToolStatus_WithNilTarget() {
+	status := &data.DocumentationStatus{SequenceID: 100}
+	toolStatus := &data.DocumentationToolStatus{Type: "godoc", Status: data.DocumentationToolStatusSucceeded}
+	err := suite.store.CreateToolStatus(nil, status, toolStatus)
+	suite.Assert().Error(err)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_CreateToolStatus_WithNilStatus() {
+	target := suite.newDocumentationTarget()
+	toolStatus := &data.DocumentationToolStatus{Type: "godoc", Status: data.DocumentationToolStatusSucceeded}
+	err := suite.store.CreateToolStatus(target, nil, toolStatus)
+	suite.Assert().Error(err)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_CreateToolStatus_WithNilToolStatus() {
+	target := suite.newDocumentationTarget()
+	status := &data.DocumentationStatus{SequenceID: 100}
+	err := suite.store.CreateToolStatus(target, status, nil)
+	suite.Assert().Error(err)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_UpdateToolStatus_WithExistingStatus() {
+	target := suite.newDocumentationTarget()
+	status := &data.DocumentationStatus{
+		SequenceID: 100,
+		CommitID:   "ada984a02cca9f8362d0c3b75fb50c0591b28924",
+		Status:     data.DocumentationStatusQueuing,
+	}
+	toolStatus := &data.DocumentationToolStatus{
+		Type:   "godoc",
+		Status: data.DocumentationToolStatusStarted,
+	}
+	key, err := suite.store.newDocumentationToolStatusKey(target, status, toolStatus)
+	suite.Assert().NoError(err)
+	oldEntity := &documentationToolStatusEntity{
+		Status:    toolStatus.Status,
+		StartedAt: time.Now().UTC().Round(time.Microsecond),
+		UpdatedAt: time.Now().UTC().Round(time.Microsecond),
+	}
+	_, err = datastore.Put(suite.Context(), key, oldEntity)
+	suite.Assert().NoError(err)
+
+	toolStatus.Status = data.DocumentationToolStatusSucceeded
+	startTime := time.Now().UTC()
+	err = suite.store.UpdateToolStatus(target, status, toolStatus)
+	endTime := time.Now().UTC()
+	suite.Assert().NoError(err)
+
+	entity := new(documentationToolStatusEntity)
+	err = datastore.Get(suite.Context(), key, entity)
+	suite.Assert().NoError(err)
+	suite.Assert().Equal(toolStatus.Status, entity.Status)
+	suite.Assert().Equal(oldEntity.StartedAt, entity.StartedAt.UTC())
+	suite.Assert().True(entity.UpdatedAt.UTC().Equal(startTime) || entity.UpdatedAt.UTC().After(startTime))
+	suite.Assert().True(entity.UpdatedAt.UTC().Equal(endTime) || entity.UpdatedAt.UTC().Before(endTime))
+}
+
+func (suite *DocumentationStoreTestSuite) Test_UpdateToolStatus_WithUnexistingStatus() {
+	target := suite.newDocumentationTarget()
+	status := &data.DocumentationStatus{
+		SequenceID: 100,
+		CommitID:   "ada984a02cca9f8362d0c3b75fb50c0591b28924",
+		Status:     data.DocumentationStatusQueuing,
+	}
+	toolStatus := &data.DocumentationToolStatus{
+		Type:   "godoc",
+		Status: data.DocumentationToolStatusStarted,
+	}
+	err := suite.store.UpdateToolStatus(target, status, toolStatus)
+	suite.Assert().Equal(data.ErrNoSuchStatus, err)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_UpdateToolStatus_WithNilTarget() {
+	status := &data.DocumentationStatus{SequenceID: 100}
+	toolStatus := &data.DocumentationToolStatus{Type: "godoc", Status: data.DocumentationToolStatusSucceeded}
+	err := suite.store.UpdateToolStatus(nil, status, toolStatus)
+	suite.Assert().Error(err)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_UpdateToolStatus_WithNilStatus() {
+	target := suite.newDocumentationTarget()
+	toolStatus := &data.DocumentationToolStatus{Type: "godoc", Status: data.DocumentationToolStatusSucceeded}
+	err := suite.store.UpdateToolStatus(target, nil, toolStatus)
+	suite.Assert().Error(err)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_UpdateToolStatus_WithNilToolStatus() {
+	target := suite.newDocumentationTarget()
+	status := &data.DocumentationStatus{SequenceID: 100}
+	err := suite.store.UpdateToolStatus(target, status, nil)
+	suite.Assert().Error(err)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_ToolStatuses_WithExistingStatus() {
+	target := suite.newDocumentationTarget()
+	status := &data.DocumentationStatus{
+		SequenceID: 100,
+		CommitID:   "ada984a02cca9f8362d0c3b75fb50c0591b28924",
+		Status:     data.DocumentationStatusQueuing,
+	}
+	toolStatusMap := map[string]*data.DocumentationToolStatus{
+		"godoc": {
+			Type:   "godoc",
+			Status: data.DocumentationToolStatusSucceeded,
+		},
+		"javadoc": {
+			Type:   "javadoc",
+			Status: data.DocumentationToolStatusFailed,
+		},
+		"rdoc": {
+			Type:   "rdoc",
+			Status: data.DocumentationToolStatusStarted,
+		},
+	}
+	for _, toolStatus := range toolStatusMap {
+		err := suite.store.CreateToolStatus(target, status, toolStatus)
+		suite.Assert().NoError(err)
+	}
+
+	actuals, err := suite.store.GetToolStatuses(target, status)
+	suite.Assert().NoError(err)
+	suite.Assert().Len(actuals, 3)
+
+	for _, actual := range actuals {
+		expected, ok := toolStatusMap[actual.Type]
+		suite.Assert().True(ok)
+		suite.Assert().NotNil(expected)
+		suite.Assert().Equal(expected.Status, actual.Status)
+	}
+}
+
+func (suite *DocumentationStoreTestSuite) Test_ToolStatuses_WithUnexistingStatus() {
+	target := suite.newDocumentationTarget()
+	status := &data.DocumentationStatus{SequenceID: 100}
+	actuals, err := suite.store.GetToolStatuses(target, status)
+	suite.Assert().NoError(err)
+	suite.Assert().Len(actuals, 0)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_ToolStatuses_WithNilTarget() {
+	status := &data.DocumentationStatus{SequenceID: 100}
+	actual, err := suite.store.GetToolStatuses(nil, status)
+	suite.Assert().Error(err)
+	suite.Assert().Nil(actual)
+}
+
+func (suite *DocumentationStoreTestSuite) Test_ToolStatuses_WithNilStatus() {
+	target := suite.newDocumentationTarget()
+	actual, err := suite.store.GetToolStatuses(target, nil)
+	suite.Assert().Error(err)
+	suite.Assert().Nil(actual)
+}
