@@ -1,6 +1,6 @@
 package storage
 
-import ( (
+import (
 	"errors"
 	"io"
 	"io/ioutil"
