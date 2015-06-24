@@ -1,8 +1,8 @@
 docstand:
-  rdoc:
+  rdoc
     version: 2.0.0
     option-a: abc
-  godoc:
+  godoc
     version: 2.0.0
     option-a: abc
 
