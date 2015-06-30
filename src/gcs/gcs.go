@@ -20,7 +20,6 @@ import (
 // GCS provides access to Google Cloud Storage (GCS).
 type GCS struct {
 	c context.Context
-
 	Bucket string
 }
 
