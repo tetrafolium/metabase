@@ -9,6 +9,7 @@ import (
 // LocalFS provides access to local file system.
 type LocalFS struct {
 	BasePath string
+	Param1 string
 }
 
 // NewLocalFS returns a storage accessor to basePath of local file system.
