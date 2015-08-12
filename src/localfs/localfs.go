@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-// LocalFS provides access to local file system.
+// LocalFS provides access to local file system. test
 type LocalFS struct {
 	BasePath string
 	Param1 string
