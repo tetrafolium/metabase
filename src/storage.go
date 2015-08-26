@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 )
 
-// Accessor is an interface for access to storage.
+// Accessor is an interface for access to storage
 type Accessor interface {
 	Create(fileName string) (io.WriteCloser, error)
 	Open(fileName string) (io.ReadCloser, error)
