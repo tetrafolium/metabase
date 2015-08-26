@@ -6,11 +6,6 @@ import (
 	"io/ioutil"
 )
 
-// TestFunc2 is a test function
-func TestFunc2() error {
-	return errors.New("this is a test")
-}
-
 // Accessor is an interface for access to storage.
 type Accessor interface {
 	Create(fileName string) (io.WriteCloser, error)
@@ -19,7 +14,7 @@ type Accessor interface {
 }
 
 // CreateFile retrieves io.WriteCloser for given Accessor and writes fileBody.
-// io.WriteCloser is closed inside function.
+// io.WriteCloser is closed inside function. a
 func CreateFile(ac Accessor, fileName string, fileBody []byte) error {
 	if ac == nil {
 		return errors.New("invalid accessor")
