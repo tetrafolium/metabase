@@ -34,7 +34,7 @@ func CreateFile(ac Accessor, fileName string, fileBody []byte) error {
 }
 
 // ReadFile retrieves io.ReadCloser for given Accessor and read contents from it.
-// io.ReadCloser is closed inside function
+// io.ReadCloser is closed inside function.
 func ReadFile(ac Accessor, fileName string) ([]byte, error) {
 	if ac == nil {
 		return nil, errors.New("invalid accessor")
