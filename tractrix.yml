@@ -1,3 +1,4 @@
 docstand:
-  godoc:
+  godoc: default
+  yard: default
 
