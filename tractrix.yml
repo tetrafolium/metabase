@@ -1,4 +1,4 @@
 docstand:
   godoc: default
   yard:
-    include_files: default
+    include_files: src/rdoc1/lib/**/*.rb
