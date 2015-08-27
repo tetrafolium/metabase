@@ -1,4 +1,5 @@
 docstand:
   godoc: default
-  yard: default
+  yard:
+    include_files: all
 
