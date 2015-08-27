@@ -2,4 +2,3 @@ docstand:
   godoc: default
   yard:
     include_files: all
-
