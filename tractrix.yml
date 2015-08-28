@@ -1,4 +1,4 @@
 docstand:
   godoc: default
   yard:
-    include_files: a b; _FAIL=true
+    include_files: all
