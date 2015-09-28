@@ -1,4 +1,4 @@
 docstand:
   godoc: default
   yard:
-    input-files: src/rdoc1
+    input-files: src/rdoc1/*
