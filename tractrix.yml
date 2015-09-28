@@ -1,4 +1,4 @@
 docstand:
   godoc: default
   yard:
-    input-files: all
+    input-files: src/rdoc1/**/*.rb
