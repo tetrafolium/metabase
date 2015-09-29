@@ -17,7 +17,7 @@ import (
 	"google.golang.org/appengine/urlfetch"
 )
 
-// GCS provides access to Google Cloud Storage (GCS).
+// GCS provides access to Google Cloud Storage (GCS)
 type GCS struct {
 	c context.Context
 	Bucket string
