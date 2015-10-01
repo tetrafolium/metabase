@@ -68,13 +68,11 @@
 <p><strong>Note</strong> :  It is required to confirm that you have proper access rights to the load test target server
 in order to prevent sending large amount of requests to servers you don't own.</p>
 </blockquote>
-</li>
-</ul>
 
 <ol>
 <li><p>Open the Settings page by clicking on the cogwheel icon in the header.</p></li>
-<li>
-<p>Select 'Target Host' tab and follow the instruction to register host.</p>
+<li><p>Select 'Target Host' tab and follow the instruction to register host.</p></li>
+</ol>
 
 <p>General registration flow is as follows.</p>
 
@@ -89,23 +87,17 @@ in order to prevent sending large amount of requests to servers you don't own.</
 </ul>
 </li>
 <li>Click the [Register] button.</li>
-<li>
-<p>If the host is correctly verified, it will be shown in the verified host list under the register button.
-If the host could not be verified, the cause of the error will be shown.</p>
+<li>If the host is correctly verified, it will be shown in the verified host list under the register button. If the host could not be verified, the cause of the error will be shown.</li>
+</ol>
 
 <p>Tips</p>
 
-<pre><code>- Check that you can access the JSON file via browser.
-- Make sure you have inputted correct host name and path.
-- Make sure you have uploaded the correct JSON file.
-- (File name of the JSON file can be anything.)
+<pre><code>   - Check that you can access the JSON file via browser.
+   - Make sure you have inputted correct host name and path.
+   - Make sure you have uploaded the correct JSON file.
+   - (File name of the JSON file can be anything.)
 </code></pre>
 </li>
-</ol>
-</li>
-</ol>
-
-<ul>
 <li>
 <p>Configuring Tractrix YAML</p>
 
@@ -114,7 +106,7 @@ If the host could not be verified, the cause of the error will be shown.</p>
 <p>Place a YAML file <code>tractrix.yml</code> file to the root of your git repository.
 Simple tractrix.yml file -</p>
 
-<div class="highlight highlight-yaml"><pre><span class="pl-s"><span class="pl-ent">loadroid:</span></span>
+<div class="highlight highlight-source-yaml"><pre><span class="pl-s"><span class="pl-ent">loadroid:</span></span>
   <span class="pl-s"><span class="pl-ent">target_host:</span> <span class="pl-s">https://your-resgisterd-awesome-hostname.com</span></span>
   <span class="pl-s"><span class="pl-ent">requests:</span></span>
     <span class="pl-s"><span class="pl-ent">get-your-request:</span></span>
@@ -135,14 +127,30 @@ Simple tractrix.yml file -</p>
 <li>period: The test runs for the specified period of time.</li>
 </ul>
 
-<h4>
-<a id="user-content-contact-us" class="anchor" href="#contact-us" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact Us</h4>
+<p>To define various other cases, check document of <a href="/configuring">YAML Configuring</a></p>
+</li>
+<li>
+<p>Starting Load Test from Webhook</p>
 
-<p>You can shoot us a note through our <a href="https://loadroid.tractrix.io/feedback/new">contact</a> page.</p>
+<p>When your CI system is ready for load test, call Loadroid webhook from your CI system to start load test.</p>
 
-<p>We would love to have your questions, feature requests, complaints, praise - anything that could help us. Let us know what we can do to improve loadroid.</p>
+<p>To specify branch/tag, add query parameter <code>?{"branch" or "tag"}={branch name or tag name}</code>. The default value is branch=master.</p>
+
+<p>Commit ID can also be specified by specifying in query parameter <code>?commit-id={commit id}</code>. If commit ID is not specified, HEAD is used.</p>
+
+<pre><code>POST https://loadroid.tractrix.io/api/1/tests/{saas}/{owner}/{name}?{"branch" or "tag"}={branch name or tag name} and/or &amp;commit-id={commit id}
+
+ex. POST https://loadroid.tractrix.io/api/1/tests/github.com/csx-ng/ng-core?token=0000&amp;branch=test-loadroid-integration
+</code></pre>
 </li>
 </ul>
+
+<h2>
+<a id="user-content-contact-us" class="anchor" href="#contact-us" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact Us</h2>
+
+<p>You can shoot us a note through our <a href="/feedback/new">contact</a> page.</p>
+
+<p>We would love to have your questions, feature requests, complaints, praise - anything that could help us. Let us know what we can do to improve loadroid.</p>
 
               </div>
             </div>
