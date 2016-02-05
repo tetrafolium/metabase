@@ -2,4 +2,4 @@ docstand:
   godoc: default
   yard:
     input-files: src/rdoc1/*
-  sphinx:
+  sphinx
