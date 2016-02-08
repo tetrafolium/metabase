@@ -1,5 +1,6 @@
 docstand:
-  godoc: default
+  godoc:
+    version: 1
   yard:
     input-files: src/rdoc1/*
   sphinx:
