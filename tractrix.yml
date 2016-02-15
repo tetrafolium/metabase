@@ -1,7 +1,3 @@
 docstand:
-  godoc:
-    version: 2.0.0
-  yard:
-    input-files: ..
-  javadoc:
-    android: android-21
+  godoc: default
+  
