@@ -1,4 +1,4 @@
 docstand:
   godoc: default
   yard:
-    input-dir: src
+    input-dirs: src
