@@ -1,3 +1,3 @@
 # sandbox-docs
 
-Repository for testing docstand..
+Repository for testing docstand.
