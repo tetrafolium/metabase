@@ -1,0 +1,40 @@
+:root {
+  --input-border-color: #d9d9d9;
+  --input-border-active-color: #4E82C0;
+  --input-border-radius: 4px;
+}
+
+.input, :local(.input) {
+  border: 1px solid var(--input-border-color);
+  padding: 0.8rem 1rem;
+  transition: border .3s linear;
+  border-radius: var(--input-border-radius);
+}
+
+.input--small {
+  padding: 0.3rem 0.4rem;
+}
+
+.input--focus,
+.input:focus, :local(.input):focus {
+  outline: none;
+  border: 1px solid var(--input-border-active-color);
+  transition: border .3s linear;
+}
+
+.input--borderless,
+.input--borderless:focus {
+  box-shadow: none;
+  outline: 0;
+  border: none !important;
+  background: transparent;
+}
+
+.input:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.no-focus:focus {
+  outline: 0;
+}

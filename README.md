@@ -1,66 +1,122 @@
-# Ring
+# Metabase
+Metabase is the easy, open source way for everyone in your company to ask questions and learn from data.
 
-[![Build Status](https://travis-ci.org/ring-clojure/ring.svg?branch=master)](https://travis-ci.org/ring-clojure/ring)
+![Metabase Product Screenshot](docs/metabase-product-screenshot.png)
 
-Ring is a Clojure web applications library inspired by Python's WSGI
-and Ruby's Rack. By abstracting the details of HTTP into a simple,
-unified API, Ring allows web applications to be constructed of modular
-components that can be shared among a variety of applications, web
-servers, and web frameworks.
+[![Latest Release](https://img.shields.io/github/release/metabase/metabase.svg?label=latest%20release)](https://github.com/metabase/metabase/releases)
+[![GitHub license](https://img.shields.io/badge/license-AGPL-05B8CC.svg)](https://raw.githubusercontent.com/metabase/metabase/master/LICENSE.txt)
+[![Circle CI](https://circleci.com/gh/metabase/metabase.svg?style=svg&circle-token=3ccf0aa841028af027f2ac9e8df17ce603e90ef9)](https://circleci.com/gh/metabase/metabase)
+[![Leiningen Dependencies Status](https://jarkeeper.com/metabase/metabase/status.svg)](https://jarkeeper.com/metabase/metabase)
+[![NPM Dependencies Status](https://david-dm.org/metabase/metabase.svg)](https://david-dm.org/metabase/metabase)
+[![Issue Stats](http://issuestats.com/github/metabase/metabase/badge/pr)](http://issuestats.com/github/metabase/metabase)
+[![Issue Stats](http://issuestats.com/github/metabase/metabase/badge/issue)](http://issuestats.com/github/metabase/metabase)
 
-The [SPEC][1] file at the root of this distribution provides a
-complete description of the Ring interface.
+# Features
+- 5 minute [setup](http://www.metabase.com/docs/latest/setting-up-metabase) (We're not kidding)
+- Let anyone on your team [ask questions](http://www.metabase.com/docs/latest/users-guide/03-asking-questions) without knowing SQL
+- Rich beautiful [dashboards](http://www.metabase.com/docs/latest/users-guide/05-sharing-answers) with auto refresh and fullscreen
+- SQL Mode for analysts and data pros
+- Create canonical [segments and metrics](http://www.metabase.com/docs/latest/administration-guide/06-segments-and-metrics) for your team to use
+- Send data to Slack or email on a schedule with [Pulses](http://www.metabase.com/docs/latest/users-guide/09-pulses)
+- View data in Slack anytime with [Metabot](http://www.metabase.com/docs/latest/users-guide/10-metabot)
+- [Humanize data](http://www.metabase.com/docs/latest/administration-guide/03-metadata-editing) for your team by renaming, annotating and hiding fields
 
-[1]: https://github.com/ring-clojure/ring/blob/master/SPEC
+For more information check out [metabase.com](http://www.metabase.com)
 
-## Upgrade Notice
+## Supported databases
 
-From version 1.2.1 onward, the ring/ring-core package no longer comes
-with the `javax.servlet/servlet-api` package as a dependency (see
-issue [#89][2]).
+- Postgres
+- MySQL
+- Druid
+- SQL Server
+- Redshift
+- MongoDB
+- Google BigQuery
+- SQLite
+- H2
+- Crate
+- Oracle
+- Vertica
 
-If you are using the `ring/ring-core` namespace on its own, you may
-run into errors when executing tests or running alternative adapters.
-To resolve this, include the following dependency in your dev profile:
-
-    [javax.servlet/servlet-api "2.5"]
-
-[2]: https://github.com/ring-clojure/ring/pull/89
-
-## Libraries
-
-* ring-core - essential functions for handling parameters, cookies and more
-* ring-devel - functions for developing and debugging Ring applications
-* ring-servlet - construct Java servlets from Ring handlers
-* ring-jetty-adapter - a Ring adapter that uses the Jetty webserver
+Don't see your favorite database? File an issue to let us know.
 
 ## Installation
 
-To include one of the above libraries, for example `ring-core`, add
-the following to your `:dependencies`:
+Metabase can be run just about anywhere so checkout our [Installation Guides](http://www.metabase.com/docs/latest/operations-guide/start.html#installing-and-running-metabase) for detailed instructions for various deployments.  Here's the TLDR:
 
-    [ring/ring-core "1.5.0"]
+### Docker
 
-To include all of them:
+To run Metabase via Docker, just type
 
-    [ring "1.5.0"]
+```sh
+docker run -d -p 3000:3000 --name metabase metabase/metabase
+```
 
-## Documentation
+### JVM Jar
 
-* [Wiki](https://github.com/ring-clojure/ring/wiki)
-* [API docs](http://ring-clojure.github.com/ring)
+To run the jar you will need to have a Java Runtime installed. As a quick check to see if you system already has one, try
 
-## Community
+```sh
+java -version
+```
 
-* [Google group](http://groups.google.com/group/ring-clojure)
+If you see something like
 
-## Thanks
+```sh
+java version "1.8.0_51"
+Java(TM) SE Runtime Environment (build 1.8.0_51-b16)
+Java HotSpot(TM) 64-Bit Server VM (build 25.51-b03, mixed mode)
+```
 
-This project borrows heavily from Ruby's Rack and Python's WSGI;
-thanks to those communities for their work.
+you are good to go. Otherwise, download the Java Runtime Environment at http://java.com/
 
-## License
+Go to the [Metabase Download Page](http://www.metabase.com/start/) and download the current build. Place the downloaded jar into a newly created directory (as it will create some files when it is run), and run it on the command line:
 
-Copyright © 2009-2016 Mark McGranaghan, James Reeves & contributors.
+```sh
+java -jar metabase.jar
+```
 
-Released under the MIT license.
+Now, open a browser and go to [http://localhost:3000](http://localhost:3000) , and you will be asked a set of questions that will set up a user account, and then you can add a database connection. For this to work you will need to get some information about which database you want to connect to, such as the Host Name and Port that it is running on, the Database Name and the User and Password that you will be using.
+
+Once you have added this connection, you will be taken into the app and you'll be ready to ask your first question.
+
+For a more detailed walkthrough, check out our [Getting Started](docs/getting-started.md) guide.
+
+# Frequently Asked Questions
+
+Some questions come up over and over again. Check here first:
+[FAQ](docs/faq.md)
+
+# Security Disclosure
+
+Security is very important to us. If discover any issue regarding security, please disclose the information responsibly by sending an email to security@metabase.com and not by creating a GitHub issue.
+
+
+# Contributing
+
+To get started with a development installation of the Metabase, follow the instructions at our [Developers Guide](docs/developers-guide.md).
+
+Then take a look at our [Contribution Guide](docs/contributing.md) for information about our process and where you can fit in!
+
+# Extending and Deep Integrations
+
+Metabase also allows you to hit our Query API directly from Javascript to integrate the simple analytics we provide with your own application or third party services to do things like:
+
+* Build moderation interfaces
+* Export subsets of your users to third party marketing automation software
+* Provide a specialized customer lookup application for the people in your company
+
+
+# Danger zone
+
+The button below will deploy the branch where this README.md lives onto Heroku. Metabase developers use it to deploy branches of Metabase to test our PRs, etc. We DO NOT recommend you using this for production. Instead, please use a [stable build](http://metabase.com/start).
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+# License
+
+Unless otherwise noted, all Metabase source files are made available under the terms of the GNU Affero General Public License (AGPL).
+
+See [LICENSE.txt](https://github.com/metabase/metabase/blob/master/LICENSE.txt) for details and exceptions.
+
+Unless otherwise noted, all files © 2016 Metabase, Inc.
